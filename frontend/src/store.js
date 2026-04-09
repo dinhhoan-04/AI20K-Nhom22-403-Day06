@@ -36,6 +36,29 @@ export const useStore = create((set, get) => ({
 
   addMessage: (msg) => set((state) => ({ chatHistory: [...state.chatHistory, msg] })),
 
+  speakResponse: (text) => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'vi-VN';
+      utterance.rate = 1.05;
+      utterance.pitch = 1.1;
+      
+      const setVoiceAndSpeak = () => {
+         const voices = window.speechSynthesis.getVoices();
+         const viVoice = voices.find(v => v.lang === 'vi-VN' || v.lang === 'vi') || voices.find(v => v.lang.includes('vi'));
+         if (viVoice) utterance.voice = viVoice;
+         window.speechSynthesis.speak(utterance);
+      };
+
+      if (window.speechSynthesis.getVoices().length > 0) {
+         setVoiceAndSpeak();
+      } else {
+         window.speechSynthesis.onvoiceschanged = setVoiceAndSpeak;
+      }
+    }
+  },
+
   sendMessage: async (message) => {
     get().addMessage({ role: 'user', content: message });
     set({ isAgentTyping: true });
@@ -55,10 +78,13 @@ export const useStore = create((set, get) => ({
     try {
       const res = await api.chat(message);
       get().addMessage({ role: 'agent', content: res.response });
+      get().speakResponse(res.response);
       // Fetch immediately to reflect fast state changes
       setTimeout(() => get().fetchCarState(), 500);
     } catch (e) {
-      get().addMessage({ role: 'agent', content: 'Hệ thống đang lỗi kết nối AI. Vui lòng thử lại sau.' });
+      const errorMsg = 'Hệ thống đang lỗi. Vui lòng thử lại sau.';
+      get().addMessage({ role: 'agent', content: errorMsg });
+      get().speakResponse(errorMsg);
     } finally {
       set({ isAgentTyping: false });
     }
