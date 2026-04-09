@@ -2,7 +2,39 @@
 
 Dưới đây là sơ đồ chi tiết kiến trúc hoạt động của `agent.py` được xây dựng dựa trên cốt lõi **LangGraph React Agent**.
 
-![alt text](../mermaid-diagram.png)
+```mermaid
+graph TD
+User([Nguoi dung / Frontend]) -->|Nhap tin nhan| Router
+
+    subgraph LangGraph React Agent Engine
+        Router{Graph State}
+        Router -->|Append message| LLM_Node[LLM GPT-5.4]
+
+        LLM_Node --> Condition{Can su dung Tool?}
+
+        Condition -- Co --> Tool_Node[Thuc thi Tool Node]
+        Tool_Node -->|Tra ket qua Tool| LLM_Node
+
+        Condition -- Khong --> Final_Output[Tao cau tra loi]
+    end
+
+    subgraph Du lieu Context
+        SP(System Prompt - Dinh danh ViVi) -.-> LLM_Node
+        UP(user_preferences.md - So thich) -.-> LLM_Node
+        MEM[(MemorySaver SQLite)] <--> Router
+    end
+
+    subgraph Tools
+        Tool_Node -.-> AC[Dieu khien nhiet do AC]
+        Tool_Node -.-> Tires[Kiem tra ap suat lop]
+        Tool_Node -.-> Lights[Bat tat den]
+        Tool_Node -.-> Doors[Dong mo khoa cua]
+        Tool_Node -.-> Web[Web Search DuckDuckGo]
+    end
+
+    Final_Output --> Output([Tra loi + TTS])
+    Output --> User
+```
 
 ## Chú thích luồng hoạt động:
 
