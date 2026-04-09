@@ -6,9 +6,9 @@ Hệ thống trợ lý ảo thế hệ mới giúp người lái điều khiển
 
 ## Level: Functional Prototype
 
-  - **UI:** Xây dựng bằng Antigravity(Dashboard giả lập bảng điều khiển trung tâm xe điện).
-  - **Core Logic:** Kết nối OpenAI API để thực hiện **Function Calling** (giả lập việc gọi xuống các API điều khiển phần cứng như Điều hòa, Cửa sổ, Chế độ lái).
-  - **Flow chính:** Người dùng nhập/nói ý định → AI phân tích thông số xe hiện tại → Xuất ra danh sách các hành động điều khiển kèm trạng thái xác nhận.
+- **UI:** Xây dựng bằng Antigravity(Dashboard giả lập bảng điều khiển trung tâm xe điện).
+- **Core Logic:** Kết nối OpenAI API để thực hiện **Function Calling** (giả lập việc gọi xuống các API điều khiển phần cứng như Điều hòa, Cửa sổ, Chế độ lái).
+- **Flow chính:** Người dùng nhập/nói ý định → AI phân tích thông số xe hiện tại → Xuất ra danh sách các hành động điều khiển kèm trạng thái xác nhận.
 
 ## Links
 
@@ -18,17 +18,17 @@ Hệ thống trợ lý ảo thế hệ mới giúp người lái điều khiển
 
 ## Tools
 
-  - **UI & Interaction:** Claude Artifacts (ReactJS, javascript, tailwind).
-  - **AI Brain:** OpenAI GPT 5.4 (Xử lý độ trễ thấp, hỗ trợ Function Calling).
-  - **Knowledge Base:** System Prompt chứa bộ danh mục API điều khiển xe (Mirror, Seat, HVAC, ADAS settings).
-  - **Voice (Simulated):** Web Speech API để minh họa khả năng nhận diện giọng nói.
+- **UI & Interaction:** Claude Artifacts (ReactJS, javascript, tailwind).
+- **AI Brain:** OpenAI GPT 5.4 (Xử lý độ trễ thấp, hỗ trợ Function Calling).
+- **Knowledge Base:** System Prompt chứa bộ danh mục API điều khiển xe (Mirror, Seat, HVAC, ADAS settings).
+- **Voice (Simulated):** Web Speech API để minh họa khả năng nhận diện giọng nói.
 
 ## Phân công
 
-| Thành viên | Phần | Output |
-| :--- | :--- | :--- |
-| **Hùng** | Canvas + Failure Modes | `spec/spec-final.md` phần 1, 4 |
-| **Khánh** | User stories 4 paths + Prompt Engineering | `spec/spec-final.md` phần 2|
-| **Thành** | Eval metrics + ROI + Demo slides | `spec/spec-final.md` phần 3, 5, `slides.pdf` |
-| **Tùng** | UI Prototype + Demo Script | Thư mục `demo/frontend/` |
-| **Hoàn** | Prototype backend | Thư mục `demo/backend/` |
+| Thành viên | Phần                                      | Output                                       |
+| :--------- | :---------------------------------------- | :------------------------------------------- |
+| **Hùng**   | Canvas + Failure Modes                    | `spec/spec-final.md` phần 1, 4               |
+| **Khánh**  | User stories 4 paths + Prompt Engineering | `spec/spec-final.md` phần 2                  |
+| **Thành**  | Eval metrics + ROI + Demo slides          | `spec/spec-final.md` phần 3, 5, `slides.pdf` |
+| **Hoàn**   | UI Prototype + Demo Script                | Thư mục `demo/frontend/`                     |
+| **Tùng**   | Prototype backend                         | Thư mục `demo/backend/`                      |
