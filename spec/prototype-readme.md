@@ -29,6 +29,6 @@ Hệ thống trợ lý ảo thế hệ mới giúp người lái điều khiển
 | :--------- | :---------------------------------------- | :------------------------------------------- |
 | **Hùng**   | Canvas  + experiment version              | `spec/spec-final.md` phần 1, branch fe/be-for-fe|
 | **Khánh**  | User stories 4 paths + Prompt Engineering | `spec/spec-final.md` phần 2                  |
-| **Thành**  | Prototype backend                         |  Thư mục `demo/backend/main.py-car_state.py` |
+| **Thành**  | Prototype backend                      |  Thư mục `demo/backend/main.py-car_state.py` |
 | **Hoàn**   | UI Prototype + Demo Script                | Thư mục `demo/frontend/`                     |
 | **Tùng**   | Prototype backend                         | Thư mục `demo/backend/`                      |
