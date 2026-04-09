@@ -10,28 +10,30 @@ export default function Dashboard() {
       <Sidebar />
 
       {/* Main Content Area */}
-      <div className="flex-1 p-8 grid grid-cols-12 gap-8 relative">
+      <div className="flex-1 p-8 grid grid-cols-12 gap-8 relative min-h-0">
         
         {/* Background ambient glow */}
         <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-vinfast-blue/10 rounded-full blur-[120px] pointer-events-none"></div>
         <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-vinfast-cyan/5 rounded-full blur-[100px] pointer-events-none"></div>
 
         {/* Left Column: Vehicle Info & Controls */}
-        <div className="col-span-12 lg:col-span-7 flex flex-col gap-8 z-10">
-          <header className="mb-4">
+        <div className="col-span-12 lg:col-span-7 flex flex-col gap-8 z-10 min-h-0 overflow-y-auto pr-2">
+          <header className="mb-4 shrink-0">
             <h1 className="text-3xl font-light tracking-tight mb-2">Good afternoon, <span className="font-medium">Driver</span></h1>
             <p className="text-gray-400 text-sm font-mono">VF 8 • Smart Cockpit Demo</p>
           </header>
 
-          <VehicleStatus />
+          <div className="shrink-0">
+            <VehicleStatus />
+          </div>
           
-          <div className="mt-auto">
+          <div className="mt-auto shrink-0 pt-4">
             <VehicleControls />
           </div>
         </div>
 
         {/* Right Column: AI Assistant */}
-        <div className="col-span-12 lg:col-span-5 h-full z-10 pb-4">
+        <div className="col-span-12 lg:col-span-5 h-full min-h-0 z-10 pb-4 flex flex-col">
           <AssistantChat />
         </div>
       </div>
