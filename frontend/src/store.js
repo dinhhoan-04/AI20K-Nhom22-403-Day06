@@ -17,7 +17,28 @@ export const useStore = create((set, get) => ({
   fetchCarState: async () => {
     try {
       const state = await api.getCarState();
+      const previousState = get().carState;
       set({ carState: state });
+
+      // Auto-warning for low tire pressure
+      const prevMin = Math.min(previousState.tires.front_left, previousState.tires.front_right, previousState.tires.rear_left, previousState.tires.rear_right);
+      const currMin = Math.min(state.tires.front_left, state.tires.front_right, state.tires.rear_left, state.tires.rear_right);
+
+      if (prevMin >= 2.1 && currMin < 2.1) {
+        let issues = [];
+        if (state.tires.front_left < 2.1) issues.push(`trước trái`);
+        if (state.tires.front_right < 2.1) issues.push(`trước phải`);
+        if (state.tires.rear_left < 2.1) issues.push(`sau trái`);
+        if (state.tires.rear_right < 2.1) issues.push(`sau phải`);
+
+        const warningMsg = `Cảnh báo an toàn! Ngay lúc này, tôi phát hiện lốp ${issues.join(', ')} của xe đang bị non. Vui lòng táp vào lề kiểm tra để đảm bảo an toàn.`;
+        get().addMessage({ role: 'agent', content: warningMsg });
+
+        // Slight delay before speaking so it feels dramatic
+        setTimeout(() => {
+          get().speakResponse(warningMsg);
+        }, 300);
+      }
     } catch (e) {
       console.error("Failed to fetch car state", e);
     }
@@ -43,18 +64,18 @@ export const useStore = create((set, get) => ({
       utterance.lang = 'vi-VN';
       utterance.rate = 1.05;
       utterance.pitch = 1.1;
-      
+
       const setVoiceAndSpeak = () => {
-         const voices = window.speechSynthesis.getVoices();
-         const viVoice = voices.find(v => v.lang === 'vi-VN' || v.lang === 'vi') || voices.find(v => v.lang.includes('vi'));
-         if (viVoice) utterance.voice = viVoice;
-         window.speechSynthesis.speak(utterance);
+        const voices = window.speechSynthesis.getVoices();
+        const viVoice = voices.find(v => v.lang === 'vi-VN' || v.lang === 'vi') || voices.find(v => v.lang.includes('vi'));
+        if (viVoice) utterance.voice = viVoice;
+        window.speechSynthesis.speak(utterance);
       };
 
       if (window.speechSynthesis.getVoices().length > 0) {
-         setVoiceAndSpeak();
+        setVoiceAndSpeak();
       } else {
-         window.speechSynthesis.onvoiceschanged = setVoiceAndSpeak;
+        window.speechSynthesis.onvoiceschanged = setVoiceAndSpeak;
       }
     }
   },
@@ -62,7 +83,7 @@ export const useStore = create((set, get) => ({
   sendMessage: async (message) => {
     get().addMessage({ role: 'user', content: message });
     set({ isAgentTyping: true });
-    
+
     // Simulate tool log for exact replica experience
     let fakeTool = null;
     const lower = message.toLowerCase();
@@ -73,7 +94,7 @@ export const useStore = create((set, get) => ({
     if (lower.includes('đèn') && lower.includes('tắt')) fakeTool = 'turn_off_lights()';
     if (lower.includes('thời tiết') || lower.includes('ai là') || lower.includes('tìm hiểu') || lower.includes('tra cứu')) fakeTool = 'web_search()';
     if (fakeTool) {
-       setTimeout(() => get().addMessage({ type: 'tool_info', content: `Calling tool: ${fakeTool}` }), 800);
+      setTimeout(() => get().addMessage({ type: 'tool_info', content: `Calling tool: ${fakeTool}` }), 800);
     }
 
     try {

@@ -109,14 +109,26 @@ YÊU CẦU HOẠT ĐỘNG VÀ SỬ DỤNG CÔNG CỤ (TOOLS):
 4. GIAO TIẾP: Đối với các câu chào hỏi bình thường (small talk), hãy trả lời trực tiếp mà không cần dùng tool.
 
 PHONG CÁCH TRẢ LỜI:
+- Xưng hô là bạn và tôi.
 - Phải dùng tiếng Việt tự nhiên, ngắn gọn (do có giọng nói TTS đọc lên).
 - Giọng văn thân thiện, chuyên nghiệp, sang trọng, mang lại cảm giác an toàn.
+- Bạn cần đảm bảo trảm nghiệm tốt của người dùng bằng tính cá nhân hóa dựa trên thông tin cá nhân và sở thích của người dùng được cung cấp
 """
+
+def read_markdown(file_path: str) -> str:
+    with open(file_path, "r", encoding="utf-8") as f:
+        return f.read()
+
+# đọc user preferences
+user_preferences = read_markdown("user_preferences.md")
+
+# nối vào system message
+system_message = system_message + user_preferences
 
 # Khởi tạo mô hình
 # gpt-5.4
 # gpt-4o-mini
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+llm = ChatOpenAI(model="gpt-5.4", temperature=0)
 
 # Bộ nhớ hỗ trợ ghi nhớ ngữ cảnh chat cục bộ
 memory = MemorySaver()

@@ -21,6 +21,17 @@ const CarControls = () => {
     fetchCarState();
   };
 
+  const handleToggleTireLeak = async () => {
+    const tires = carState.tires;
+    const minTire = Math.min(tires.front_left, tires.front_right, tires.rear_left, tires.rear_right);
+    if (minTire < 2.1) {
+        await api.mockTiresUpdate({ front_left: 2.4, front_right: 2.4, rear_left: 2.4, rear_right: 2.4 });
+    } else {
+        await api.mockTiresUpdate({ front_left: 1.8 }); // Simulate front-left tire leak
+    }
+    fetchCarState();
+  };
+
   return (
     <div className="h-full w-full max-w-5xl flex flex-col gap-6">
       
@@ -57,20 +68,35 @@ const CarControls = () => {
         {/* Right Stack */}
         <div className="flex flex-col gap-6">
             {/* Tire Pressure */}
-            <div className="bg-[#12151B] rounded-[24px] p-7 border border-[#1e2329] shadow-lg flex-1 flex flex-col justify-between">
-                <div className="flex justify-between items-center w-full">
-                   <div className="flex items-center gap-3 text-gray-400">
-                       <Gauge size={16} className="opacity-70" />
-                       <span className="text-[11px] font-bold tracking-widest uppercase">TIRE PRESSURE</span>
-                   </div>
-                </div>
-                <div className="flex justify-between items-end mt-4">
-                    <div className="text-[28px] font-light leading-none">2.4 <span className="text-sm font-semibold text-gray-500 tracking-tight ml-1">bar</span></div>
-                    <div className="flex items-center justify-center gap-2 text-[#31C48D] text-xs font-medium bg-[#1e2e26] border border-[#264535] px-3 py-1.5 rounded-full">
-                        <div className="w-1.5 h-1.5 bg-[#31C48D] rounded-full shadow-[0_0_8px_#31C48D]"></div> Optimal
+            {(() => {
+                const tires = carState.tires;
+                const minTire = Math.min(tires.front_left, tires.front_right, tires.rear_left, tires.rear_right);
+                const isWarning = minTire < 2.1;
+
+                return (
+                    <div 
+                        onClick={handleToggleTireLeak}
+                        title="Click to simulate tire leak"
+                        className={`rounded-[24px] p-7 border shadow-lg flex-1 flex flex-col justify-between transition-all cursor-pointer select-none ${isWarning ? 'bg-[#211212] border-[#f0525280] shadow-[0_0_20px_rgba(240,82,82,0.15)]' : 'bg-[#12151B] border-[#1e2329] hover:bg-[#1a1f25]'}`}
+                    >
+                        <div className="flex justify-between items-center w-full">
+                           <div className={`flex items-center gap-3 ${isWarning ? 'text-[#f05252]' : 'text-gray-400'}`}>
+                               <Gauge size={16} className={isWarning ? "animate-pulse" : "opacity-70"} />
+                               <span className="text-[11px] font-bold tracking-widest uppercase">{isWarning ? 'LOW PRESSURE ALERT' : 'TIRE PRESSURE'}</span>
+                           </div>
+                        </div>
+                        <div className="flex justify-between items-end mt-4">
+                            <div className={`text-[28px] font-light leading-none ${isWarning ? 'text-[#f05252]' : 'text-white'}`}>
+                                {minTire.toFixed(1)} <span className={`text-sm font-semibold tracking-tight ml-1 ${isWarning ? 'text-[#f05252] opacity-80' : 'text-gray-500'}`}>bar</span>
+                            </div>
+                            <div className={`flex items-center justify-center gap-2 text-xs font-medium px-3 py-1.5 rounded-full ${isWarning ? 'text-[#f05252] bg-[#3a1b1b] border border-[#f0525260] shadow-[0_0_10px_#f0525230]' : 'text-[#31C48D] bg-[#1e2e26] border border-[#264535]'}`}>
+                                <div className={`w-1.5 h-1.5 rounded-full ${isWarning ? 'bg-[#f05252] shadow-[0_0_8px_#f05252] animate-ping' : 'bg-[#31C48D] shadow-[0_0_8px_#31C48D]'}`}></div> 
+                                {isWarning ? 'Critical' : 'Optimal'}
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
+                );
+            })()}
 
             {/* Next Station */}
             <div className="bg-[#12151B] rounded-[24px] p-7 border border-[#1e2329] shadow-lg flex-1 flex flex-col justify-between">
