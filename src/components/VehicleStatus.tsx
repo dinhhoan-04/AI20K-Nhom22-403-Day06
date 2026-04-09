@@ -1,7 +1,10 @@
 import { BatteryCharging, Gauge, Navigation, AlertCircle } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useVehicle } from '../context/VehicleContext';
 
 export default function VehicleStatus() {
+  const { state } = useVehicle();
+
   return (
     <div className="grid grid-cols-2 gap-4">
       {/* Battery Card */}
@@ -23,20 +26,20 @@ export default function VehicleStatus() {
         <div className="mt-8">
           <div className="text-sm text-gray-400 uppercase tracking-wider mb-1">Battery Level</div>
           <div className="flex items-baseline gap-2">
-            <span className="text-5xl font-light tracking-tight">42</span>
+            <span className="text-5xl font-light tracking-tight">{state.battery}</span>
             <span className="text-xl text-gray-500">%</span>
           </div>
         </div>
 
         <div className="mt-6">
           <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-vinfast-blue to-vinfast-cyan w-[42%] rounded-full relative">
+            <div className="h-full bg-gradient-to-r from-vinfast-blue to-vinfast-cyan rounded-full relative" style={{ width: `${state.battery}%` }}>
               <div className="absolute top-0 right-0 bottom-0 w-4 bg-white/30 animate-pulse"></div>
             </div>
           </div>
           <div className="flex justify-between mt-2 text-xs font-mono text-gray-500">
             <span>Est. Range</span>
-            <span className="text-white">120 km</span>
+            <span className="text-white">{state.range} km</span>
           </div>
         </div>
       </motion.div>
@@ -57,7 +60,7 @@ export default function VehicleStatus() {
           </div>
           <div className="flex items-center justify-between mt-4">
             <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-light">2.4</span>
+              <span className="text-2xl font-light">{state.tirePressure}</span>
               <span className="text-xs text-gray-500">bar</span>
             </div>
             <div className="flex items-center gap-1 text-green-400 bg-green-400/10 px-2 py-1 rounded-lg text-xs">

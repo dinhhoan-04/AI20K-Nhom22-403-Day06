@@ -3,10 +3,11 @@ import { GoogleGenAI, LiveServerMessage, Modality, Type } from '@google/genai';
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-export function useLiveAPI() {
+export function useLiveAPI(onToolCall?: () => void) {
   const [isConnected, setIsConnected] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [transcript, setTranscript] = useState<{role: string, text: string}[]>([]);
+  const [userPrefs, setUserPrefs] = useState("");
   
   const sessionRef = useRef<any>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -17,6 +18,17 @@ export function useLiveAPI() {
   const audioQueueRef = useRef<AudioBuffer[]>([]);
   const isPlayingRef = useRef(false);
   const currentSourceRef = useRef<AudioBufferSourceNode | null>(null);
+
+  useEffect(() => {
+    fetch('/api/user-preferences')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.content) {
+          setUserPrefs(data.content);
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   const playNext = useCallback(() => {
     if (audioQueueRef.current.length === 0) {
@@ -55,7 +67,7 @@ export function useLiveAPI() {
           speechConfig: {
             voiceConfig: { prebuiltVoiceConfig: { voiceName: "Zephyr" } },
           },
-          systemInstruction: "Bạn là trợ lý AI trên xe VinFast. Bạn nói chuyện thân thiện, ngắn gọn, hữu ích bằng tiếng Việt. Bạn có thể kiểm tra pin, áp suất lốp, tìm trạm sạc và bật điều hoà.",
+          systemInstruction: `Bạn là trợ lý AI trên xe VinFast. Bạn nói chuyện thân thiện, ngắn gọn, hữu ích bằng tiếng Việt. Bạn có thể kiểm tra pin, áp suất lốp, tìm trạm sạc, bật điều hoà, khóa/mở khóa xe, bật/tắt đèn, xem thời tiết và mở ứng dụng giải trí.\n\nThông tin và sở thích của người dùng:\n${userPrefs}`,
           tools: [{
             functionDeclarations: [
               {
@@ -79,6 +91,21 @@ export function useLiveAPI() {
               {
                 name: "find_charging_station",
                 description: "Find nearest charging station",
+              },
+              { name: "get_weather", description: "Get current weather" },
+              { name: "lock_vehicle", description: "Lock the vehicle" },
+              { name: "unlock_vehicle", description: "Unlock the vehicle" },
+              { name: "turn_on_lights", description: "Turn on vehicle lights" },
+              { name: "turn_off_lights", description: "Turn off vehicle lights" },
+              {
+                name: "open_app",
+                description: "Open an external app like YouTube",
+                parameters: {
+                  type: Type.OBJECT,
+                  properties: {
+                    appName: { type: Type.STRING, description: "Name of the app to open" }
+                  }
+                }
               }
             ]
           }],
@@ -113,7 +140,7 @@ export function useLiveAPI() {
             processor.connect(audioContextRef.current!.destination);
           },
           onmessage: async (message: LiveServerMessage) => {
-            // Handle Audio Output
+            // Handle Audio Output from Gemini
             const base64Audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
             if (base64Audio && playbackContextRef.current) {
               const binaryString = atob(base64Audio);
@@ -177,6 +204,38 @@ export function useLiveAPI() {
                     } else if (call.name === 'find_charging_station') {
                       const res = await fetch('/api/vehicle/charging-stations');
                       result = await res.json();
+                    } else if (call.name === 'get_weather') {
+                      result = { weather: "Trời nắng đẹp, nhiệt độ 28 độ C." };
+                    } else if (call.name === 'lock_vehicle') {
+                      const res = await fetch('/api/vehicle/control', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'lock' })
+                      });
+                      result = await res.json();
+                    } else if (call.name === 'unlock_vehicle') {
+                      const res = await fetch('/api/vehicle/control', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'unlock' })
+                      });
+                      result = await res.json();
+                    } else if (call.name === 'turn_on_lights') {
+                      const res = await fetch('/api/vehicle/control', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'lights_on' })
+                      });
+                      result = await res.json();
+                    } else if (call.name === 'turn_off_lights') {
+                      const res = await fetch('/api/vehicle/control', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'lights_off' })
+                      });
+                      result = await res.json();
+                    } else if (call.name === 'open_app') {
+                      result = { message: `Đã mở ứng dụng ${(call.args as any)?.appName}.` };
                     }
                   } catch (e) {
                     result = { error: "Failed to execute tool" };
@@ -188,12 +247,16 @@ export function useLiveAPI() {
                     response: result
                   });
                   
-                  setTranscript(prev => [...prev, { role: 'system', text: `Called tool: ${call.name}` }]);
+                  setTranscript(prev => [...prev, { role: 'system', text: `Đang thực hiện: ${call.name}...` }]);
                 }
                 
                 sessionPromise.then(session => {
                   session.sendToolResponse({ functionResponses });
                 });
+                
+                if (onToolCall) {
+                  onToolCall();
+                }
               }
             }
           },
@@ -215,7 +278,7 @@ export function useLiveAPI() {
       console.error("Failed to connect to Live API:", error);
       cleanup();
     }
-  }, [playNext]);
+  }, [playNext, userPrefs, onToolCall]);
 
   const cleanup = useCallback(() => {
     if (processorRef.current && audioContextRef.current) {

@@ -1,5 +1,5 @@
 {
-  "name": "",
-  "description": "",
-  "requestFramePermissions": []
+  "name": "VinFast In-Car AI Assistant",
+  "description": "Smart Cockpit AI Demo with Voice capabilities",
+  "requestFramePermissions": ["microphone"]
 }

@@ -4,7 +4,12 @@
  */
 
 import Dashboard from './components/Dashboard';
+import { VehicleProvider } from './context/VehicleContext';
 
 export default function App() {
-  return <Dashboard />;
+  return (
+    <VehicleProvider>
+      <Dashboard />
+    </VehicleProvider>
+  );
 }

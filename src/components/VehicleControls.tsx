@@ -1,11 +1,9 @@
 import { Wind, Lock, Unlock, Lightbulb, Fan, Zap } from 'lucide-react';
-import { useState } from 'react';
 import { motion } from 'motion/react';
+import { useVehicle } from '../context/VehicleContext';
 
 export default function VehicleControls() {
-  const [acOn, setAcOn] = useState(false);
-  const [locked, setLocked] = useState(true);
-  const [lightsOn, setLightsOn] = useState(false);
+  const { state, updateControl } = useVehicle();
 
   return (
     <div className="bg-dashboard-card border border-dashboard-border rounded-3xl p-6">
@@ -16,51 +14,53 @@ export default function VehicleControls() {
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          onClick={() => setAcOn(!acOn)}
+          onClick={() => updateControl(state.acOn ? 'turn_off_ac' : 'turn_on_ac')}
           className={`relative overflow-hidden rounded-2xl p-4 flex flex-col items-center justify-center gap-3 transition-all duration-300 ${
-            acOn 
+            state.acOn 
               ? 'bg-vinfast-blue/20 border border-vinfast-blue/50 text-white' 
               : 'bg-white/5 border border-white/5 text-gray-400 hover:bg-white/10'
           }`}
         >
-          {acOn && (
+          {state.acOn && (
             <div className="absolute inset-0 bg-gradient-to-t from-vinfast-blue/20 to-transparent opacity-50"></div>
           )}
-          <Wind size={28} className={acOn ? 'text-vinfast-cyan animate-pulse' : ''} />
-          <span className="text-xs font-medium uppercase tracking-wide">A/C</span>
-          {acOn && <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-vinfast-cyan shadow-[0_0_8px_#06B6D4]"></div>}
+          <Wind size={28} className={state.acOn ? 'text-vinfast-cyan animate-pulse' : ''} />
+          <span className="text-xs font-medium uppercase tracking-wide">
+            {state.acOn ? `A/C ${state.acTemp}°C` : 'A/C'}
+          </span>
+          {state.acOn && <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-vinfast-cyan shadow-[0_0_8px_#06B6D4]"></div>}
         </motion.button>
 
         {/* Lock Control */}
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          onClick={() => setLocked(!locked)}
+          onClick={() => updateControl(state.locked ? 'unlock' : 'lock')}
           className={`relative overflow-hidden rounded-2xl p-4 flex flex-col items-center justify-center gap-3 transition-all duration-300 ${
-            locked 
+            state.locked 
               ? 'bg-white/5 border border-white/5 text-gray-400 hover:bg-white/10'
               : 'bg-red-500/10 border border-red-500/30 text-white'
           }`}
         >
-          {locked ? <Lock size={28} /> : <Unlock size={28} className="text-red-400" />}
-          <span className="text-xs font-medium uppercase tracking-wide">{locked ? 'Locked' : 'Unlocked'}</span>
-          {!locked && <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_#EF4444]"></div>}
+          {state.locked ? <Lock size={28} /> : <Unlock size={28} className="text-red-400" />}
+          <span className="text-xs font-medium uppercase tracking-wide">{state.locked ? 'Locked' : 'Unlocked'}</span>
+          {!state.locked && <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_#EF4444]"></div>}
         </motion.button>
 
         {/* Lights Control */}
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          onClick={() => setLightsOn(!lightsOn)}
+          onClick={() => updateControl(state.lightsOn ? 'lights_off' : 'lights_on')}
           className={`relative overflow-hidden rounded-2xl p-4 flex flex-col items-center justify-center gap-3 transition-all duration-300 ${
-            lightsOn 
+            state.lightsOn 
               ? 'bg-yellow-500/10 border border-yellow-500/30 text-white' 
               : 'bg-white/5 border border-white/5 text-gray-400 hover:bg-white/10'
           }`}
         >
-          <Lightbulb size={28} className={lightsOn ? 'text-yellow-400' : ''} />
+          <Lightbulb size={28} className={state.lightsOn ? 'text-yellow-400' : ''} />
           <span className="text-xs font-medium uppercase tracking-wide">Lights</span>
-          {lightsOn && <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-yellow-400 shadow-[0_0_8px_#FACC15]"></div>}
+          {state.lightsOn && <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-yellow-400 shadow-[0_0_8px_#FACC15]"></div>}
         </motion.button>
       </div>
 

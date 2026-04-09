@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Mic, Send, Sparkles, Volume2, MicOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLiveAPI } from '../hooks/useLiveAPI';
+import { useVehicle } from '../context/VehicleContext';
 
 type Message = {
   id: string;
@@ -11,6 +12,7 @@ type Message = {
 };
 
 export default function AssistantChat() {
+  const { refreshState } = useVehicle();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -22,7 +24,7 @@ export default function AssistantChat() {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  const { isConnected, isSpeaking, transcript, connect, disconnect } = useLiveAPI();
+  const { isConnected, isSpeaking, transcript, connect, disconnect } = useLiveAPI(refreshState);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -70,68 +72,27 @@ export default function AssistantChat() {
     setIsTyping(true);
 
     try {
-      const lowerInput = newUserMsg.content.toLowerCase();
-      let responseContent = '';
-      let toolCallMsg: Message | null = null;
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: newUserMsg.content })
+      });
+      
+      const data = await res.json();
 
-      if (lowerInput.includes('pin') || lowerInput.includes('battery')) {
-        toolCallMsg = {
-          id: Date.now().toString() + '-tool',
-          role: 'system',
-          content: 'Calling tool: get_battery_status()',
-          isToolCall: true,
-        };
-        setMessages(prev => [...prev, toolCallMsg!]);
-        
-        const res = await fetch('/api/vehicle/battery');
-        const data = await res.json();
-        responseContent = data.message;
-
-      } else if (lowerInput.includes('điều hoà') || lowerInput.includes('ac')) {
-        toolCallMsg = {
-          id: Date.now().toString() + '-tool',
-          role: 'system',
-          content: 'Calling tool: turn_on_ac()',
-          isToolCall: true,
-        };
-        setMessages(prev => [...prev, toolCallMsg!]);
-
-        const res = await fetch('/api/vehicle/ac', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'turn_on', temp: 24 })
+      if (data.toolCalls && data.toolCalls.length > 0) {
+        data.toolCalls.forEach((toolName: string) => {
+          setMessages(prev => [
+            ...prev,
+            {
+              id: Date.now().toString() + Math.random(),
+              role: 'system',
+              content: `Đang thực hiện: ${toolName}...`,
+              isToolCall: true,
+            }
+          ]);
         });
-        const data = await res.json();
-        responseContent = data.message;
-
-      } else if (lowerInput.includes('áp suất') || lowerInput.includes('lốp')) {
-         toolCallMsg = {
-          id: Date.now().toString() + '-tool',
-          role: 'system',
-          content: 'Calling tool: get_tire_pressure()',
-          isToolCall: true,
-        };
-        setMessages(prev => [...prev, toolCallMsg!]);
-
-        const res = await fetch('/api/vehicle/tire-pressure');
-        const data = await res.json();
-        responseContent = data.message;
-
-      } else if (lowerInput.includes('trạm sạc') || lowerInput.includes('sạc')) {
-        toolCallMsg = {
-          id: Date.now().toString() + '-tool',
-          role: 'system',
-          content: 'Calling tool: find_charging_station()',
-          isToolCall: true,
-        };
-        setMessages(prev => [...prev, toolCallMsg!]);
-
-        const res = await fetch('/api/vehicle/charging-stations');
-        const data = await res.json();
-        responseContent = data.message;
-        
-      } else {
-        responseContent = 'Tôi hiểu rồi. Tuy nhiên hiện tại tôi chỉ là phiên bản Demo, tôi có thể giúp bạn kiểm tra pin, áp suất lốp, tìm trạm sạc hoặc bật điều hoà.';
+        refreshState();
       }
 
       setMessages(prev => [
@@ -139,9 +100,14 @@ export default function AssistantChat() {
         {
           id: Date.now().toString() + '-resp',
           role: 'assistant',
-          content: responseContent,
+          content: data.response,
         }
       ]);
+
+      // If voice is connected, we can optionally read out the text response.
+      // But since we are moving to "Gemini Live handles everything", 
+      // if they type text, we might want Gemini Live to speak it.
+      // Let's just keep it simple: Text goes to /api/chat, Voice goes to Gemini Live.
     } catch (error) {
       console.error("Error calling backend API:", error);
       setMessages(prev => [
