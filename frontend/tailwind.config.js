@@ -7,22 +7,18 @@ export default {
   theme: {
     extend: {
       colors: {
-        vinfast: {
-          dark: '#0B0F19',
-          blue: '#1A4CCC',
-          light: '#E6EFFF',
-          accent: '#00C3FF'
+        vf: {
+          bg: '#0A0D11', // Deep background representing the very back
+          panel: '#12151B', // Panel background
+          card: '#1A1D24', // Card background 
+          blue: '#1A4CCC', // Core Blue
+          cyan: '#00D2FF', // Accent cyan
+          red: '#F05252',
+          yellow: '#E3A008',
         }
       },
-      backgroundImage: {
-        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'glass-gradient': 'linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0))',
-      },
-      boxShadow: {
-        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
-      },
-      backdropBlur: {
-        'glass': '12px',
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
       }
     },
   },

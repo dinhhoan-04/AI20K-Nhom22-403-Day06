@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Mic, CarFront, User, Loader2 } from 'lucide-react';
+import { Mic, Send } from 'lucide-react';
 import { useStore } from '../store';
 
 const ChatPanel = () => {
@@ -12,7 +12,6 @@ const ChatPanel = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatHistory, isAgentTyping]);
 
-  // Sinh thẻ xử lý Web Speech API
   let recognition = null;
   if ('webkitSpeechRecognition' in window) {
     recognition = new window.webkitSpeechRecognition();
@@ -22,7 +21,6 @@ const ChatPanel = () => {
       const transcript = e.results[0][0].transcript;
       setText(transcript);
       setIsListening(false);
-      // Gửi luôn lập tức
       sendMessage(transcript);
       setText('');
     };
@@ -47,70 +45,87 @@ const ChatPanel = () => {
   };
 
   return (
-    <div className="glass-card flex flex-col h-full overflow-hidden border-white/20 relative">
-      <div className="bg-white/10 p-4 border-b border-white/10 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-vinfast-blue flex items-center justify-center flex-shrink-0 shadow-lg shadow-vinfast-blue/30">
-          <CarFront className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <h2 className="text-lg font-bold text-white tracking-wide">VinFast Assistant</h2>
-          <div className="text-xs text-vinfast-accent/80 flex items-center gap-1.5 font-medium">
-             <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div> Always Real-time
+    <div className="bg-[#12151B] h-[calc(100vh-3rem)] my-6 mr-6 rounded-3xl flex flex-col overflow-hidden border border-[#232930] shadow-2xl">
+      
+      {/* Header */}
+      <div className="px-6 py-5 flex items-center justify-between border-b border-transparent bg-transparent shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="relative">
+             {/* VF Logo icon mock */}
+             <div className="w-9 h-9 bg-gradient-to-br from-[#1b2b3b] to-[#121b25] border border-[#213145] rounded-full flex flex-col items-center justify-center p-1.5 shadow-[0_0_10px_rgba(0,0,0,0.5)]">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-vf-cyan">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" strokeLinecap="round" strokeLinejoin="round"/>
+               </svg>
+             </div>
+             <div className="w-2.5 h-2.5 rounded-full bg-[#1A4CCC] absolute top-[-2px] right-[-2px] border-2 border-[#12151B]"></div>
+          </div>
+          <div>
+            <h2 className="text-white font-semibold flex items-center gap-2 text-[15px] tracking-wide">VinFast Assistant</h2>
+            <p className="text-[12px] text-gray-500 font-medium tracking-wide">Smart Cockpit AI</p>
           </div>
         </div>
+        <button 
+          onClick={toggleListen}
+          className={`text-gray-400 hover:text-white transition-colors p-2 rounded-full ${isListening ? 'animate-pulse text-[#00D2FF] bg-[#00D2FF]/10' : ''}`}
+        >
+            <Mic size={20} className="stroke-[1.5]" />
+        </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-5 pb-8 space-y-6">
-        {chatHistory.map((m, i) => (
-          <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[75%] flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
-              <div className="flex items-center gap-2 mb-1.5 opacity-60">
-                 {m.role === 'agent' ? <CarFront size={12}/> : <User size={12}/>}
-                 <span className="text-[10px] uppercase font-bold tracking-wider">{m.role === 'agent' ? 'ViVi' : 'You'}</span>
-              </div>
-              <div className={`px-4 py-2.5 rounded-2xl text-[15px] leading-relaxed shadow-md ${
-                m.role === 'user' 
-                  ? 'bg-vinfast-blue text-white rounded-br-sm' 
-                  : 'bg-white/10 text-white border border-white/10 rounded-bl-sm backdrop-blur-md'
-              }`}>
-                {m.content}
-              </div>
+      {/* Chat Area */}
+      <div className="flex-1 overflow-y-auto px-5 py-2 flex flex-col gap-6 w-full">
+        {chatHistory.map((m, i) => {
+          
+          if (m.type === 'tool_info') {
+              return (
+                 <div key={i} className="self-start text-[11px] font-mono text-gray-400 flex items-center gap-2 opacity-80 px-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#E3A008]"></div>
+                    {m.content}
+                 </div>
+              );
+          }
+          
+          return (
+          <div key={i} className={`flex w-full ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className={`px-5 py-3.5 max-w-[85%] text-[14px] font-medium leading-[1.6] shadow-sm ${
+              m.role === 'user' 
+                ? 'bg-[#143B87] text-white rounded-[20px] rounded-br-md drop-shadow-[0_2px_8px_rgba(26,76,204,0.3)]' 
+                : 'bg-[#1C2028] text-gray-300 border border-[#272D38] rounded-[20px] rounded-tl-md'
+            }`}>
+              {m.content}
             </div>
           </div>
-        ))}
+        )})}
         {isAgentTyping && (
-          <div className="flex items-center gap-2 text-vinfast-accent opacity-80 pt-2 px-2">
-            <Loader2 className="animate-spin w-4 h-4"/>
-            <span className="text-sm font-medium">Đang xử lý thông tin...</span>
+          <div className="flex w-full justify-start mt-2">
+             <div className="px-5 py-3 rounded-[20px] rounded-tl-md bg-[#1C2028] border border-[#272D38] flex gap-1.5 items-center justify-center">
+                <div className="w-1.5 h-1.5 rounded-full bg-gray-500 animate-bounce" style={{animationDelay: '0ms'}}></div>
+                <div className="w-1.5 h-1.5 rounded-full bg-gray-500 animate-bounce" style={{animationDelay: '150ms'}}></div>
+                <div className="w-1.5 h-1.5 rounded-full bg-gray-500 animate-bounce" style={{animationDelay: '300ms'}}></div>
+             </div>
           </div>
         )}
-        <div ref={chatEndRef} />
+        <div ref={chatEndRef} className="h-2" />
       </div>
 
-      <div className="p-4 bg-white/5 border-t border-white/10 backdrop-blur-xl shrink-0">
-        <div className="flex items-center gap-2 bg-black/40 rounded-full p-2 border border-white/10 focus-within:border-vinfast-accent/50 transition-colors">
-          <button 
-            onClick={toggleListen}
-            className={`p-2.5 rounded-full transition-all flex items-center justify-center ${isListening ? 'bg-red-500/20 text-red-500 animate-pulse' : 'hover:bg-white/10 text-gray-400'}`}
-          >
-            <Mic className="w-5 h-5" />
-          </button>
-          
+      {/* Input Area */}
+      <div className="p-5 bg-[#12151B] mt-2 mb-2">
+        <div className="flex items-center gap-3 bg-[#161a20] p-1.5 rounded-full border border-[#272D38] focus-within:border-[#384152] transition-colors shadow-inner">
           <input 
             type="text" 
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Nói hoặc nhập lệnh thoại (VD: Bật điều hòa)" 
-            className="flex-1 bg-transparent text-white outline-none placeholder:text-white/30 text-[15px]" 
+            placeholder="Nhập yêu cầu..." 
+            className="flex-1 bg-transparent text-gray-200 text-[14px] px-5 outline-none placeholder:text-[#4B5563]" 
           />
           
           <button 
             onClick={handleSend}
             disabled={!text.trim() || isAgentTyping}
-            className="p-2.5 rounded-full bg-vinfast-blue hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:hover:bg-vinfast-blue flex items-center justify-center shadow-lg"
+            className="w-10 h-10 rounded-full bg-[#164e43] border border-[#1d6b5b] text-[#00D2FF] hover:bg-[#1a5e51] transition-colors disabled:opacity-50 disabled:grayscale flex items-center justify-center shrink-0"
           >
-            <Send className="w-5 h-5" />
+            <Send size={16} className="-ml-0.5 mt-0.5" />
           </button>
         </div>
       </div>

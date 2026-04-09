@@ -4,30 +4,22 @@
 
 @layer base {
   body {
-    @apply bg-vinfast-dark text-white antialiased overflow-hidden;
-    /* Basic dark map-like gradient background to fake map view */
-    background: radial-gradient(circle at center, #1b2742 0%, #080b12 100%);
+    @apply bg-vf-bg text-white antialiased overflow-hidden;
     font-family: 'Inter', -apple-system, sans-serif;
   }
 }
 
-@layer utilities {
-  .glass-card {
-    @apply bg-white/5 backdrop-blur-glass border border-white/10 shadow-glass rounded-2xl;
-  }
-}
-
-/* Custom Scrollbar for Chat */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
+  background: #2D3748;
+  border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.4);
+  background: #4A5568;
 }
